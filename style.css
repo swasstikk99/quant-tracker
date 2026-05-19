@@ -1416,7 +1416,9 @@ header {
   color: var(--text-secondary);
 }
 
-.form-input {
+.form-field {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -1427,7 +1429,7 @@ header {
   transition: var(--transition-fast);
 }
 
-.form-input:focus {
+.form-field:focus {
   border-color: var(--accent-blue);
   box-shadow: 0 0 10px rgba(0, 176, 255, 0.15);
 }
