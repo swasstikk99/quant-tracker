@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuantPy - Quantitative Finance & Python Study Terminal</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="A premium interactive quantitative finance and python learning terminal. Track study roadmaps, save curated resources, embed youtube lectures, log daily goals, and access preloaded mathematical models.">
+  <meta name="keywords" content="Quantitative Finance, Python, Quant Finance, Backtesting, Sharpe Ratio, Portfolio Optimization, Study Dashboard, Bloomberg Clone">
+  <meta name="author" content="Antigravity Quant Systems">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- CDN Lucide Icons Library -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Main App Frame -->
+  <div id="app-container">
+    
+    <!-- Sidebar Navigation Menu -->
+    <aside id="sidebar-navigation">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i class="lucide-trending-up" style="color: #07090e; font-size: 20px;"></i>
+        </div>
+        <div class="logo-text-box">
+          <span class="logo-text">QuantPy</span>
+          <span class="logo-badge">Terminal</span>
+        </div>
+      </div>
+      
+      <nav aria-label="Main Navigation">
+        <div class="nav-item active" onclick="navigateTo('dashboard')" id="nav-btn-dashboard" role="button" tabindex="0">
+          <i class="lucide-layout-dashboard"></i>
+          <span>Dashboard</span>
+        </div>
+        
+        <div class="nav-item" onclick="navigateTo('roadmap')" id="nav-btn-roadmap" role="button" tabindex="0">
+          <i class="lucide-git-branch"></i>
+          <span>Study Roadmap</span>
+        </div>
+        
+        <div class="nav-item" onclick="navigateTo('resources')" id="nav-btn-resources" role="button" tabindex="0">
+          <i class="lucide-library"></i>
+          <span>Resource Library</span>
+        </div>
+        
+        <div class="nav-item" onclick="navigateTo('goals')" id="nav-btn-goals" role="button" tabindex="0">
+          <i class="lucide-calendar-days"></i>
+          <span>Weekly Focus & Timer</span>
+        </div>
+        
+        <div class="nav-item" onclick="navigateTo('snippets')" id="nav-btn-snippets" role="button" tabindex="0">
+          <i class="lucide-terminal"></i>
+          <span>Python Snippet Vault</span>
+        </div>
+      </nav>
+      
+      <div class="nav-footer">
+        <p>QuantPy Terminal v1.2.0</p>
+        <p style="margin-top: 4px; font-size: 10px;">Accelerating Quant Mastery</p>
+      </div>
+    </aside>
+    
+    <!-- Core Application Wrapper -->
+    <main id="main-panel-wrapper">
+      
+      <!-- Top Control Header -->
+      <header id="top-control-header">
+        <div class="header-title-section">
+          <h1 id="main-heading-title" style="font-size: 22px;">QuantPy Study Workspace</h1>
+          <span class="header-subtitle" id="current-telemetry-date">Integrated Quantitative Finance & Python Command Center</span>
+        </div>
+        
+        <div class="header-actions">
+          <div class="streak-counter" id="header-streak-badge">
+            <i class="lucide-flame"></i>
+            <span id="header-streak-count">0 DAY STREAK</span>
+          </div>
+          
+          <button class="btn-secondary" onclick="openLogTimeModal()" id="header-log-hours-btn">
+            <i class="lucide-clock-3"></i>
+            <span>Log Study Time</span>
+          </button>
+          
+          <button class="btn-primary" onclick="openNewGoalModal()" id="header-add-task-btn">
+            <i class="lucide-plus"></i>
+            <span>New Daily Goal</span>
+          </button>
+        </div>
+      </header>
+      
+      <!-- VIEW 1: DASHBOARD -->
+      <section class="view-panel active" id="dashboard-view" aria-label="Dashboard Overview">
+        <!-- Motivational Banner -->
+        <div class="motivational-banner">
+          <i class="lucide-sparkles"></i>
+          <div class="motivational-text">
+            <strong>Welcome back to your Study Terminal!</strong> Focus on mastering mathematical models and coding daily. Every line of backtesting script you write builds your institutional trading skills. Set goals, log time, and watch the streak compound.
+          </div>
+        </div>
+        
+        <!-- Stats Telemetry Grid -->
+        <div class="stats-grid">
+          <div class="stat-card streak">
+            <div class="stat-info">
+              <span class="stat-label">Study Streak</span>
+              <span class="stat-value" id="stat-val-streak">0 Days</span>
+            </div>
+            <div class="stat-icon"><i class="lucide-flame"></i></div>
+          </div>
+          
+          <div class="stat-card progress">
+            <div class="stat-info">
+              <span class="stat-label">Overall Progress</span>
+              <span class="stat-value" id="stat-val-progress">0%</span>
+            </div>
+            <div class="stat-icon"><i class="lucide-percent"></i></div>
+          </div>
+          
+          <div class="stat-card hours">
+            <div class="stat-info">
+              <span class="stat-label">Total Focused Time</span>
+              <span class="stat-value" id="stat-val-hours">0.0 hrs</span>
+            </div>
+            <div class="stat-icon"><i class="lucide-hourglass"></i></div>
+          </div>
+          
+          <div class="stat-card tasks">
+            <div class="stat-info">
+              <span class="stat-label">Active Goal Load</span>
+              <span class="stat-value" id="stat-val-tasks">0 Tasks</span>
+            </div>
+            <div class="stat-icon"><i class="lucide-list-todo"></i></div>
+          </div>
+        </div>
+        
+        <!-- Two Column Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Daily checklist card panel -->
+          <div class="card-container" id="checklist-card-panel">
+            <div class="dashboard-panel-title">
+              <span>Today's Quantitative Goals</span>
+              <button class="btn-secondary" onclick="openNewGoalModal()" style="padding: 6px 12px; font-size: 12px;">
+                <i class="lucide-plus"></i> Add Goal
+              </button>
+            </div>
+            <div class="checklist-container" id="quick-checklist-container">
+              <!-- Loaded Dynamically via JS -->
+            </div>
+          </div>
+          
+          <!-- Short-cut Focus Tools Panel -->
+          <div class="card-container" id="focus-shortcuts-panel">
+            <div class="dashboard-panel-title">Custom Syllabus Builder</div>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+              Ready to construct your own custom Quantitative Syllabus? Create study segments, log specific YouTube lectures, and control your own course pathway.
+            </p>
+            <button class="btn-primary" onclick="navigateTo('roadmap')" style="width: 100%; justify-content: center; background: linear-gradient(135deg, var(--accent-blue), #00e5ff); box-shadow: 0 4px 15px rgba(0, 176, 255, 0.25);">
+              <i class="lucide-git-branch"></i> Open Syllabus Builder
+            </button>
+            
+            <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 20px;">
+              <h4 style="font-size: 14px; margin-bottom: 12px;">Active Python Environment Recommended</h4>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Open a terminal or Jupyter Lab session and install key math/finance packages so you can copy and execute algorithms locally.
+              </p>
+              <code style="display: block; background: #05070a; padding: 10px 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; color: #a9b2c3; border: 1px solid var(--border-color);">
+                pip install yfinance pandas numpy matplotlib scipy
+              </code>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- VIEW 2: SYLLABUS ROADMAP -->
+      <section class="view-panel" id="roadmap-view" aria-label="Curriculum Roadmap">
+        <div class="dashboard-panel-title" style="margin-bottom: 12px;">
+          <span>Syllabus Learning Pathways</span>
+        </div>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; max-width: 800px;">
+          Build a fully customized quantitative curriculum! Define study phases/modules, log specific YouTube lectures or links under each phase, and track completion progress via range sliders.
+        </p>
+        
+        <div class="roadmap-timeline" id="roadmap-timeline-wrapper">
+          <!-- Roadmap Cards Rendered dynamically in app.js -->
+        </div>
+      </section>
+      
+      <!-- VIEW 3: RESOURCE LIBRARY -->
+      <section class="view-panel" id="resources-view" aria-label="Resource Library">
+        <div class="resource-grid-filters">
+          <div class="header-title-section">
+            <h2 style="font-size: 18px;">Quant Media & Material Center</h2>
+            <p class="header-subtitle">Save study links, textbooks, repositories, and playlists in a structured grid.</p>
+          </div>
+          
+          <div class="filter-pills">
+            <div class="filter-pill active" onclick="setResourceFilter('all')">All Material</div>
+            <div class="filter-pill" onclick="setResourceFilter('lecture')">Video Lectures</div>
+            <div class="filter-pill" onclick="setResourceFilter('book')">Textbooks & PDFs</div>
+            <div class="filter-pill" onclick="setResourceFilter('tutorial')">Web Tutorials</div>
+          </div>
+          
+          <button class="btn-primary" onclick="openNewResourceModal()">
+            <i class="lucide-library"></i> Add Material
+          </button>
+        </div>
+        
+        <div class="resource-grid" id="resource-grid-wrapper">
+          <!-- Loaded Dynamically via JS -->
+        </div>
+      </section>
+      
+      <!-- VIEW 4: PLAYLIST THEATRE & NOTES -->
+      <section class="view-panel" id="theatre-view" aria-label="Study Theatre Workspace">
+        <div class="theatre-panel">
+          <!-- Video Frame Column -->
+          <div class="theatre-left">
+            <div class="video-container-wrapper">
+              <iframe id="theatre-iframe" allowfullscreen src="" allow="autoplay"></iframe>
+            </div>
+            
+            <div class="theatre-meta">
+              <h3 class="theatre-title" id="theatre-title">Syllabus Video Stream</h3>
+              
+              <!-- Video Completion Percentage Scrubber -->
+              <div id="theatre-progress-container"></div>
+              
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 14px;">
+                You are watching in theatre mode. Use the workspace notepad on the right to log formulas, write pseudo-code, and outline core derivatives. Notes are synchronized directly with local storage per keystroke.
+              </p>
+              <button class="btn-secondary" onclick="navigateTo('roadmap')" style="margin-top: 14px;">
+                <i class="lucide-chevron-left"></i> Back to Syllabus Roadmap
+              </button>
+            </div>
+          </div>
+          
+          <!-- Study Notepad Workspace Column -->
+          <div class="theatre-right">
+            <div class="notes-editor-container">
+              <div class="notes-editor-header">
+                <span class="notes-title"><i class="lucide-notebook-pen" style="color: var(--accent-blue);"></i> Real-Time Study Notes</span>
+                <span class="auto-save-indicator" id="auto-save-status-text">
+                  <i class="lucide-cloud-lightning"></i> Notes saved to Local Storage
+                </span>
+              </div>
+              <textarea class="notes-textarea" id="theatre-notes-textarea" placeholder=""></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- VIEW 5: WEEKLY FOCUS & TIMER -->
+      <section class="view-panel" id="goals-view" aria-label="Weekly planner and timer">
+        <div class="goals-view-grid">
+          <!-- Study Timer Panel -->
+          <div class="pomodoro-container" id="timer-box-panel">
+            <div class="timer-circle-wrap">
+              <span class="timer-time-display" id="timer-display">25:00</span>
+              <span class="timer-status-text">Session Active</span>
+            </div>
+            
+            <div class="timer-presets">
+              <button class="timer-preset-btn active" onclick="setTimerPreset(25)">Focus (25m)</button>
+              <button class="timer-preset-btn" onclick="setTimerPreset(5)">Short Break (5m)</button>
+              <button class="timer-preset-btn" onclick="setTimerPreset(15)">Long Break (15m)</button>
+            </div>
+            
+            <div class="timer-controls">
+              <button class="btn-timer-control btn-timer-reset" onclick="resetTimer()" title="Reset Session"><i class="lucide-rotate-ccw"></i></button>
+              <button class="btn-timer-control btn-timer-play" onclick="isTimerRunning ? pauseTimer() : startTimer()" id="btn-play-pause" title="Start Session"><i class="lucide-play"></i></button>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); width: 100%; padding-top: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+              Completing a full 25-minute study cycle automatically logs <strong>0.4 focused hours</strong> into your dashboard stat registers! Turn off phone notifications and focus.
+            </div>
+          </div>
+          
+          <!-- Calendar Weekly Planner Panel -->
+          <div class="card-container" id="schedule-planner-panel">
+            <div class="dashboard-panel-title">Weekly Syllabus Blueprint</div>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
+              Outline specific daily targets for Python frameworks or math concepts. Adjust standard entries below by typing directly in the row slots.
+            </p>
+            
+            <div class="schedule-container" id="schedule-rows-wrapper">
+              <!-- Loaded Dynamically via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- VIEW 6: PYTHON SNIPPET VAULT -->
+      <section class="view-panel" id="snippets-view" aria-label="Python snippet manager">
+        <div class="snippets-grid-filters" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+          <div class="header-title-section">
+            <h2 style="font-size: 18px;">Quantitative Python Boilerplate Library</h2>
+            <p class="header-subtitle">Access core reference algorithms or save custom scripts locally.</p>
+          </div>
+          
+          <button class="btn-primary" onclick="openNewSnippetModal()">
+            <i class="lucide-terminal"></i> Save My Snippet
+          </button>
+        </div>
+        
+        <div class="snippets-view-layout">
+          <!-- Selection Column -->
+          <div class="snippets-list-panel" id="snippets-list-wrapper">
+            <!-- Loaded Dynamically via JS -->
+          </div>
+          
+          <!-- Code Viewer Column -->
+          <div class="snippets-viewer-panel">
+            <div class="snippet-viewer-header">
+              <div class="snippet-viewer-title-box">
+                <span class="snippet-viewer-title" id="snippet-view-title">Fetch Market Data</span>
+                <div class="snippet-viewer-libs" id="snippet-libs-wrapper">
+                  <span class="lib-badge">yfinance</span>
+                </div>
+              </div>
+              
+              <button class="btn-primary" onclick="copySnippetToClipboard()" style="padding: 8px 16px; font-size: 13px;">
+                <i class="lucide-copy"></i> Copy Code
+              </button>
+            </div>
+            
+            <pre class="snippet-code-box"><code id="snippet-code-content"></code></pre>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+  </div>
+  
+  <!-- MODAL 1: ADD GOAL MODAL -->
+  <div class="modal-overlay" id="new-goal-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Create Daily Goal Item</span>
+        <button class="close-modal-btn" onclick="closeNewGoalModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-goal-text">Goal description</label>
+          <input type="text" class="form-input" id="input-goal-text" placeholder="e.g. Write code for portfolio optimization weights matrix">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="select-goal-category">Curriculum Domain</label>
+          <select class="form-input" id="select-goal-category" style="background: var(--bg-primary);">
+            <option value="python">Python Programming</option>
+            <option value="quant">Financial Mathematics</option>
+            <option value="daily">Generic Daily Study Block</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeNewGoalModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitNewGoalForm()">Register Goal</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MODAL 2: ADD SYLLABUS PHASE MODAL -->
+  <div class="modal-overlay" id="new-phase-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Add Course/Syllabus Phase</span>
+        <button class="close-modal-btn" onclick="closeNewPhaseModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-phase-title">Phase Section Title</label>
+          <input type="text" class="form-input" id="input-phase-title" placeholder="e.g. Phase 1: Options & Derivatives">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-phase-desc">Subtitle / Abstract</label>
+          <input type="text" class="form-input" id="input-phase-desc" placeholder="e.g. Studying Black-Scholes formulas and greeks calculations">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeNewPhaseModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitNewPhaseForm()">Create Phase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ADD SYLLABUS UNIT MODAL -->
+  <div class="modal-overlay" id="new-unit-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Add Lecture Unit to Section</span>
+        <button class="close-modal-btn" onclick="closeNewUnitModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-unit-title">Lecture Title</label>
+          <input type="text" class="form-input" id="input-unit-title" placeholder="e.g. Option Greeks: Delta & Gamma">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-unit-concepts">Core Concepts (comma-separated)</label>
+          <input type="text" class="form-input" id="input-unit-concepts" placeholder="e.g. Delta, Gamma, Hedging">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-unit-url">YouTube Video Target URL (Supports embedded theatre player)</label>
+          <input type="url" class="form-input" id="input-unit-url" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeNewUnitModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitNewUnitForm()">Save Unit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: ADD CUSTOM MATERIAL RESOURCE MODAL -->
+  <div class="modal-overlay" id="new-resource-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Integrate Study Material</span>
+        <button class="close-modal-btn" onclick="closeNewResourceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-res-title">Material Title</label>
+          <input type="text" class="form-input" id="input-res-title" placeholder="e.g. Backtrader Core Tutorials Guide">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-res-desc">Resource Abstract / Notes</label>
+          <input type="text" class="form-input" id="input-res-desc" placeholder="Brief outline of concepts included">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="select-res-type">Category Class</label>
+          <select class="form-input" id="select-res-type" style="background: var(--bg-primary);">
+            <option value="lecture">Video Lectures & Playlists</option>
+            <option value="book">Textbook or Academic PDF</option>
+            <option value="tutorial">Online Web Tutorials</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-res-tags">Tags (Comma Separated)</label>
+          <input type="text" class="form-input" id="input-res-tags" placeholder="e.g. Backtest, Python, Libraries">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-res-duration">Duration Descriptor</label>
+          <input type="text" class="form-input" id="input-res-duration" placeholder="e.g. 15 videos, 250 pages, 30 min">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-res-url">Target Web URL (YouTube support embedded player)</label>
+          <input type="url" class="form-input" id="input-res-url" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeNewResourceModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitNewResourceForm()">Save Resource</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MODAL 5: LOG STUDY TIME MODAL -->
+  <div class="modal-overlay" id="log-time-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Register Study Increments</span>
+        <button class="close-modal-btn" onclick="closeLogTimeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-log-hours">Study duration logged (Hours)</label>
+          <input type="number" step="0.1" class="form-input" id="input-log-hours" placeholder="e.g. 1.5">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeLogTimeModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitLogTimeForm()">Sync Hours</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: ADD CUSTOM SNIPPET MODAL -->
+  <div class="modal-overlay" id="new-snippet-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Save Code Recipe in Vault</span>
+        <button class="close-modal-btn" onclick="closeNewSnippetModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-snip-title">Snippet Title</label>
+          <input type="text" class="form-input" id="input-snip-title" placeholder="e.g. Calculate Expected Shortfall (CVaR)">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="input-snip-desc">Short Description</label>
+          <input type="text" class="form-input" id="input-snip-desc" placeholder="e.g. Uses scipy and pandas to calculate Expected Shortfall metrics.">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-snip-libs">Required Libraries (comma separated)</label>
+          <input type="text" class="form-input" id="input-snip-libs" placeholder="e.g. pandas, numpy, scipy">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-snip-code">Python Code Block</label>
+          <textarea class="form-input" id="input-snip-code" style="font-family: var(--font-mono); font-size:12px; height: 180px; resize:none;" placeholder="def calculate_cvar(df): ..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeNewSnippetModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitNewSnippetForm()">Save Snippet</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- JavaScript Scripts -->
+  <script src="snippets.js"></script>
+  <script src="app.js"></script>
+  
+  <!-- Auto-Initialize Lucide Icons -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons({ nameAttr: 'class' });
+    });
+  </script>
+</body>
+</html>
