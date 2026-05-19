@@ -102,6 +102,26 @@ class StateManager {
     this.saveState();
   }
 
+  addImportedSyllabusPhase(title, desc, videos) {
+    const newPhase = {
+      phaseId: `phase-${Date.now()}`,
+      phaseTitle: title,
+      phaseDesc: desc || "Auto-imported course playlist from YouTube.",
+      items: videos.map((video, idx) => {
+        return {
+          id: `item-${Date.now()}-${idx}`,
+          title: video.title,
+          concepts: video.concepts && video.concepts.length ? video.concepts : ["quant"],
+          videoUrl: `https://www.youtube.com/watch?v=${video.videoId}`,
+          videoId: video.videoId,
+          progress: 0
+        };
+      })
+    };
+    this.syllabus.push(newPhase);
+    this.saveState();
+  }
+
   deleteSyllabusPhase(phaseId) {
     this.syllabus = this.syllabus.filter(p => p.phaseId !== phaseId);
     this.saveState();
@@ -1102,6 +1122,191 @@ function submitLogTimeForm() {
   renderDashboardView();
   renderStats();
   showToast("Study time logged successfully. Daily streak synced!", "success");
+}
+
+// --- YOUTUBE PLAYLIST AUTOMATED COURSE IMPORTER ---
+function openImportPlaylistModal() {
+  document.getElementById("import-playlist-modal").style.display = "flex";
+  document.getElementById("input-playlist-url").value = "";
+  document.getElementById("yt-import-status").style.display = "none";
+  document.getElementById("btn-submit-yt-import").disabled = false;
+  document.getElementById("btn-cancel-yt-import").disabled = false;
+}
+
+function closeImportPlaylistModal() {
+  document.getElementById("import-playlist-modal").style.display = "none";
+}
+
+function extractPlaylistId(url) {
+  url = url.trim();
+  const match = url.match(/[?&]list=([^#\&\?]+)/);
+  if (match) return match[1];
+  
+  const matchDirect = url.match(/^[a-zA-Z0-9_-]{18,34}$/);
+  if (matchDirect) return url;
+  
+  return null;
+}
+
+function parsePlaylistHtml(html) {
+  const regex = /ytInitialData\s*=\s*({.+?});/s;
+  const match = html.match(regex);
+  if (!match) {
+    const altRegex = /ytInitialData\s*=\s*({.+?})\s*(?:<\/script>|;)/s;
+    const altMatch = html.match(altRegex);
+    if (!altMatch) throw new Error("Could not parse YouTube page structure. The playlist may be invalid or private.");
+    return decodePlaylistJson(altMatch[1]);
+  }
+  return decodePlaylistJson(match[1]);
+}
+
+function decodePlaylistJson(jsonStr) {
+  const ytData = JSON.parse(jsonStr);
+  
+  // Extract Playlist Name
+  let playlistTitle = "Imported YouTube Playlist";
+  try {
+    playlistTitle = ytData.metadata.playlistMetadataRenderer.title || playlistTitle;
+  } catch (e) {
+    try {
+      playlistTitle = ytData.header.playlistHeaderRenderer.title.simpleText || playlistTitle;
+    } catch(err) {
+      try {
+        playlistTitle = ytData.header.playlistHeaderRenderer.title.runs[0].text || playlistTitle;
+      } catch (err2) {}
+    }
+  }
+  
+  // Extract Videos
+  let videos = [];
+  try {
+    let listContents = null;
+    
+    if (ytData.contents && ytData.contents.twoColumnBrowseResultsRenderer) {
+      listContents = ytData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
+    } else if (ytData.contents && ytData.contents.singleColumnBrowseResultsRenderer) {
+      listContents = ytData.contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
+    }
+    
+    if (listContents) {
+      listContents.forEach(item => {
+        if (item.playlistVideoRenderer) {
+          const r = item.playlistVideoRenderer;
+          const videoId = r.videoId;
+          let title = "Untitled Lecture";
+          try {
+            title = r.title.runs[0].text;
+          } catch (e) {
+            try {
+              title = r.title.accessibility.accessibilityData.label;
+            } catch(err) {}
+          }
+          
+          // Generate semantic concepts
+          let concepts = ["quant"];
+          const lowerTitle = title.toLowerCase();
+          if (lowerTitle.includes("python") || lowerTitle.includes("code")) concepts.push("python");
+          if (lowerTitle.includes("math") || lowerTitle.includes("stochastic") || lowerTitle.includes("calculus")) concepts.push("math");
+          if (lowerTitle.includes("option") || lowerTitle.includes("greek") || lowerTitle.includes("derivative")) concepts.push("options");
+          if (lowerTitle.includes("portfolio") || lowerTitle.includes("weight") || lowerTitle.includes("sharpe")) concepts.push("portfolio");
+          if (lowerTitle.includes("backtest") || lowerTitle.includes("strategy")) concepts.push("backtesting");
+          if (lowerTitle.includes("data") || lowerTitle.includes("pandas") || lowerTitle.includes("fetch")) concepts.push("data");
+          if (concepts.length === 1) concepts.push("lecture");
+          
+          videos.push({
+            videoId,
+            title,
+            concepts
+          });
+        }
+      });
+    }
+  } catch (e) {
+    console.error("Scraper JSON parsing details:", e);
+  }
+  
+  if (videos.length === 0) {
+    throw new Error("No public videos could be extracted from this playlist. Verify it is public.");
+  }
+  
+  return {
+    title: playlistTitle,
+    videos: videos
+  };
+}
+
+async function submitImportPlaylistForm() {
+  const urlInput = document.getElementById("input-playlist-url");
+  const playlistId = extractPlaylistId(urlInput.value);
+  
+  if (!playlistId) {
+    showToast("Invalid YouTube Playlist ID or URL.", "error");
+    return;
+  }
+  
+  const statusBox = document.getElementById("yt-import-status");
+  const statusText = document.getElementById("yt-import-status-text");
+  const submitBtn = document.getElementById("btn-submit-yt-import");
+  const cancelBtn = document.getElementById("btn-cancel-yt-import");
+  
+  statusBox.style.display = "flex";
+  statusText.innerText = "Connecting to CORS Proxy...";
+  submitBtn.disabled = true;
+  cancelBtn.disabled = true;
+  
+  const targetUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+  
+  // Try Proxy 1: allorigins
+  try {
+    statusText.innerText = "Fetching course structure (allorigins.win)...";
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+    const response = await fetch(proxyUrl);
+    if (response.ok) {
+      const data = await response.json();
+      statusText.innerText = "Parsing videos and playlists...";
+      const course = parsePlaylistHtml(data.contents);
+      
+      // Inject Syllabus
+      state.addImportedSyllabusPhase(course.title, `Dynamic quantitative curriculum consisting of ${course.videos.length} imported lectures.`, course.videos);
+      
+      closeImportPlaylistModal();
+      renderRoadmapView();
+      renderStats();
+      showToast(`Successfully imported course: ${course.title} (${course.videos.length} units created!)`, "success");
+      return;
+    }
+  } catch (e) {
+    console.warn("Proxy 1 failed, trying Proxy 2...", e);
+  }
+  
+  // Try Proxy 2: corsproxy.io
+  try {
+    statusText.innerText = "Re-routing request (corsproxy.io)...";
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    const response = await fetch(proxyUrl);
+    if (response.ok) {
+      const html = await response.text();
+      statusText.innerText = "Extracting videos and playlists...";
+      const course = parsePlaylistHtml(html);
+      
+      // Inject Syllabus
+      state.addImportedSyllabusPhase(course.title, `Dynamic quantitative curriculum consisting of ${course.videos.length} imported lectures.`, course.videos);
+      
+      closeImportPlaylistModal();
+      renderRoadmapView();
+      renderStats();
+      showToast(`Successfully imported course: ${course.title} (${course.videos.length} units created!)`, "success");
+      return;
+    }
+  } catch (e) {
+    console.error("Proxy 2 failed too", e);
+  }
+  
+  // Reset buttons
+  statusBox.style.display = "none";
+  submitBtn.disabled = false;
+  cancelBtn.disabled = false;
+  showToast("Failed to fetch playlist contents. Verify the playlist URL/ID is public.", "error");
 }
 
 // --- INITIALIZE MAIN WORKSPACE ON LOAD ---
